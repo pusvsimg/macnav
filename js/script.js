@@ -69,165 +69,58 @@ function setupSearch() {
 
 // 网站项点击处理
 function setupWebsiteItems() {
-    const websiteItems = document.querySelectorAll('.website-item');
-    
-    websiteItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const siteName = item.querySelector('.website-name').textContent;
-            let url = '#';
-            
-            // 根据网站名确定URL
-            switch(siteName) {
-                case '百度':
-                    url = 'https://www.baidu.com';
-                    break;
-                case '蓝易云':
-                    url = 'https://www.aliyun.com';
-                    break;
-                case '即时设计':
-                    url = 'https://js.design';
-                    break;
-                case '码云Gitee':
-                    url = 'https://gitee.com';
-                    break;
-                case 'GitHub':
-                    url = 'https://github.com';
-                    break;
-                case 'WebTerm':
-                    url = 'https://webterm.dev';
-                    break;
-                case '服务器':
-                    url = 'https://console.cloud.tencent.com';
-                    break;
-                default:
-                    url = 'https://www.baidu.com';
-            }
-            
-            window.open(url, '_blank');
-        });
-    });
+    // 使用href属性处理链接，不再需要复杂的switch语句
+    // 所有链接都已经用<a>标签直接包含了href属性
 }
 
-// Dock项点击处理
+// 底部Dock栏点击功能
 function setupDockItems() {
     const dockItems = document.querySelectorAll('.dock-item');
+    const navItems = document.querySelectorAll('.nav-item');
     
-    dockItems.forEach(item => {
+    dockItems.forEach((item, index) => {
         item.addEventListener('click', () => {
-            const siteName = item.querySelector('.sr-only')?.textContent || '';
-            let url = '#';
-            
-            // 根据网站名确定URL
-            switch(siteName) {
-                case '百度':
-                    url = 'https://www.baidu.com';
-                    break;
-                case 'AI':
-                    url = 'https://chat.openai.com';
-                    break;
-                case '阿里云':
-                    url = 'https://www.aliyun.com';
-                    break;
-                case '华为':
-                    url = 'https://www.huawei.com';
-                    break;
-                case 'GitHub':
-                    url = 'https://github.com';
-                    break;
-                case '微博':
-                    url = 'https://weibo.com';
-                    break;
-                case '哔哩哔哩':
-                    url = 'https://www.bilibili.com';
-                    break;
-                case '知乎':
-                    url = 'https://www.zhihu.com';
-                    break;
-                case 'CSDN':
-                    url = 'https://www.csdn.net';
-                    break;
-                case '工具':
-                    // 显示工具菜单
-                    alert('工具功能开发中...');
-                    return;
-                case '掘金':
-                    url = 'https://juejin.cn';
-                    break;
-                case '抖音':
-                    url = 'https://www.douyin.com';
-                    break;
-                case '京东':
-                    url = 'https://www.jd.com';
-                    break;
-                case '淘宝':
-                    url = 'https://www.taobao.com';
-                    break;
-                default:
-                    url = 'https://www.google.com';
+            // 点击dock项目时，触发相应导航项目的点击事件
+            if (index < navItems.length) {
+                navItems[index].click();
             }
-            
-            window.open(url, '_blank');
         });
     });
 }
 
-// 导航栏项点击处理
-function setupNavItems() {
+// 分类切换功能
+function setupCategorySwitch() {
     const navItems = document.querySelectorAll('.nav-item');
-    const websiteCategories = document.querySelectorAll('.website-category');
-    
-    // 定义分类id映射
-    const categoryMap = {
-        '首页': 'home-category',
-        '娱乐影音': 'entertainment-category',
-        '工具开发': 'dev-category',
-        '购物消费': 'shopping-category',
-        '学习教育': 'education-category',
-        '新闻资讯': 'news-category',
-        '游戏娱乐': 'gaming-category',
-        '云服务': 'cloud-category',
-        '旅行出行': 'travel-category',
-        '健康医疗': 'health-category'
-    };
+    const categories = document.querySelectorAll('.website-category');
     
     navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // 移除所有active类
-            navItems.forEach(navItem => {
-                navItem.classList.remove('active');
-            });
+        item.addEventListener('click', () => {
+            // 移除所有激活状态
+            navItems.forEach(nav => nav.classList.remove('active'));
+            categories.forEach(cat => cat.classList.remove('active-category'));
             
-            // 添加active类到当前点击的项
-            this.classList.add('active');
+            // 添加当前项的激活状态
+            item.classList.add('active');
+            const categoryId = item.getAttribute('data-category');
+            const categoryElement = document.getElementById(categoryId);
+            categoryElement.classList.add('active-category');
             
-            // 获取当前分类名称
-            const categoryName = this.querySelector('span').textContent;
+            // 重置滚动位置到顶部
+            categoryElement.scrollTop = 0;
+        });
+    });
+    
+    // 监听滚动事件，确保内容不被Dock栏遮挡
+    categories.forEach(category => {
+        category.addEventListener('scroll', function() {
+            // 检测是否接近底部
+            const isNearBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 100;
             
-            // 隐藏所有分类
-            websiteCategories.forEach(category => {
-                category.classList.remove('active-category');
-            });
-            
-            // 显示对应的分类
-            const categoryId = categoryMap[categoryName];
-            if (categoryId) {
-                const targetCategory = document.getElementById(categoryId);
-                if (targetCategory) {
-                    targetCategory.classList.add('active-category');
-                }
-            }
-            
-            // 添加分类切换动画
-            const targetCategory = document.getElementById(categoryId);
-            if (targetCategory) {
-                targetCategory.style.opacity = 0;
-                targetCategory.classList.add('active-category');
-                
-                // 渐入动画
-                setTimeout(() => {
-                    targetCategory.style.transition = 'opacity 0.3s ease';
-                    targetCategory.style.opacity = 1;
-                }, 50);
+            // 如果接近底部，添加额外的底部padding
+            if (isNearBottom) {
+                this.style.paddingBottom = '100px';
+            } else {
+                this.style.paddingBottom = '20px';
             }
         });
     });
@@ -318,8 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearch();
     setupWebsiteItems();
     setupDockItems();
-    setupNavItems();
+    setupCategorySwitch();
     
     // 可选：启用背景粒子效果
     // setupParticles();
-}); 
+});
